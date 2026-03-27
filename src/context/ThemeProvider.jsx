@@ -5,7 +5,7 @@ import { STORAGE_KEY, THEMES, isThemeId } from '../config/theme.js'
 import { ThemeContext } from './theme-context.js'
 
 function readTheme() {
-  if (typeof document === 'undefined') return 'light'
+  if (typeof document === 'undefined') return 'dark'
   const fromDom = document.documentElement.getAttribute('data-theme')
   if (fromDom && isThemeId(fromDom)) {
     return fromDom
@@ -18,7 +18,7 @@ function readTheme() {
   } catch {
     /* ignore */
   }
-  return 'light'
+  return 'dark'
 }
 
 export function ThemeProvider({ children }) {
