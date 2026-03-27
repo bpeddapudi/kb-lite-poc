@@ -94,12 +94,6 @@ function EquinixFortressBackdrop({ mouse, mouseClient }) {
   )
 }
 
-const AI_MOCK_RESPONSES = [
-  'Based on your draft requirements, I recommend starting with two edge regions and validating latency before scaling globally.',
-  'A practical next step is to map user clusters to nearest metros, then align cloud exits for low-jitter interconnection.',
-  'For this scenario, focus on security and scalability first, then optimize cost after baseline performance is stable.',
-]
-
 const REGION_OPTIONS = ['US East', 'US West', 'Europe', 'APAC', 'Latin America', 'Middle East & Africa']
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n))
 
@@ -425,9 +419,19 @@ export function ChatInterfacePage() {
   const [aiMessages, setAiMessages] = useState([
     {
       role: 'assistant',
-      text: 'Hi! I am your architecture assistant. Ask me anything about interconnection, regions, or cloud strategy.',
+      text: 'I can guide you to assess cloud complexity and shape a practical architecture strategy.',
+    },
+    {
+      role: 'assistant',
+      text: 'First question: How many cloud and SaaS providers does your organization use?',
+    },
+    {
+      role: 'assistant',
+      text: 'Please reply with a value between 0 and 100.',
     },
   ])
+  const [aiProviderValue, setAiProviderValue] = useState(36)
+  const [aiHasInput, setAiHasInput] = useState(false)
   const [drafts, setDrafts] = useState({
     providers: QUESTIONNAIRE[0].defaultValue,
     cloudEnvironments: [],
@@ -453,7 +457,9 @@ export function ChatInterfacePage() {
       ? activeQuestion
         ? getInsight(activeQuestion.id, currentDraft)
         : latestInsight
-      : latestInsight
+      : aiHasInput
+        ? getInsight('providers', aiProviderValue)
+        : null
   const totalQuestions = QUESTIONNAIRE.length
   const currentStep = Math.min(questionIndex + 1, totalQuestions)
   const progressPercent = (currentStep / totalQuestions) * 100
@@ -492,8 +498,23 @@ export function ChatInterfacePage() {
     const text = aiInput.trim()
     if (!text) return
 
-    const response = AI_MOCK_RESPONSES[aiMessages.length % AI_MOCK_RESPONSES.length]
-    setAiMessages((prev) => [...prev, { role: 'user', text }, { role: 'assistant', text: response }])
+    const numericMatch = text.match(/-?\d+(\.\d+)?/)
+    const parsed = numericMatch ? Number.parseFloat(numericMatch[0]) : Number.NaN
+    const normalized = Number.isFinite(parsed) && parsed >= 0 && parsed <= 100 ? Math.round(parsed) : 5
+    setAiHasInput(true)
+    setAiProviderValue(normalized)
+    setAiMessages((prev) => [
+      ...prev,
+      { role: 'user', text },
+      {
+        role: 'assistant',
+        text: `Captured provider count: ${normalized}. I updated the Provider Complexity Gauge on the right.`,
+      },
+      {
+        role: 'assistant',
+        text: 'You can enter another number (0-100) and I will refresh the analysis.',
+      },
+    ])
     setAiInput('')
   }
 
@@ -672,12 +693,12 @@ export function ChatInterfacePage() {
           <main
             className={`grid grid-cols-1 gap-4 overflow-hidden transition-all duration-700 lg:grid-cols-12 ${
               viewState === 'ready'
-                ? 'h-[50vh] min-h-[420px] max-h-[560px] translate-y-0 opacity-100'
+                ? 'h-[50vh] min-h-[420px] max-h-[560px] min-h-0 translate-y-0 opacity-100'
                 : 'pointer-events-none max-h-0 min-h-0 translate-y-6 opacity-0'
             }`}
           >
-          <div className="lg:col-span-7">
-            <div className="flex h-full flex-col rounded-3xl border border-border/70 bg-card/65 p-4 shadow-2xl backdrop-blur-xl">
+          <div className="min-h-0 lg:col-span-7">
+            <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-border/70 bg-card/65 p-4 shadow-2xl backdrop-blur-xl">
               <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
                 <Sparkles className="size-4" aria-hidden />
                 Chat assistant
@@ -711,7 +732,7 @@ export function ChatInterfacePage() {
                 })}
               </div>
 
-              <div className="flex-1 space-y-3 overflow-auto rounded-2xl border border-border/60 bg-background/55 p-4">
+              <div className="h-0 min-h-0 flex-1 space-y-3 overflow-y-auto rounded-2xl border border-border/60 bg-background/55 p-4">
                 {mode === 'web-app' ? (
                   <>
                     {activeQuestion ? (
@@ -943,7 +964,7 @@ export function ChatInterfacePage() {
                     {aiMessages.map((msg, idx) => (
                       <div
                         key={`ai-${msg.role}-${idx}`}
-                        className={`max-w-[92%] rounded-xl px-3 py-2 text-sm ${
+                        className={`max-w-[90%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                           msg.role === 'assistant'
                             ? 'border border-border/70 bg-card text-foreground'
                             : 'ml-auto bg-primary/15 text-foreground'
@@ -962,9 +983,15 @@ export function ChatInterfacePage() {
                     <textarea
                       value={aiInput}
                       onChange={(e) => setAiInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          submitAiMessage()
+                        }
+                      }}
                       rows={2}
                       placeholder="Type your question..."
-                      className="min-h-[56px] flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                      className="min-h-[56px] max-h-40 flex-1 resize-none overflow-y-auto bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                     />
                     <button
                       type="button"
@@ -1135,14 +1162,57 @@ export function ChatInterfacePage() {
               ) : (
                 <>
                   <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">AI Chat</p>
-                  <div className="space-y-3">
-                    <h3 className="text-xl font-semibold">Mock Assistant Response</h3>
-                    <p className="text-muted-foreground">
-                      {aiMessages
-                        .filter((m) => m.role === 'assistant')
-                        .at(-1)?.text ?? 'Start a conversation to see mock responses.'}
-                    </p>
-                  </div>
+                  {rightPanelInsight ? (
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-semibold">{rightPanelInsight.title}</h3>
+                      <p className="text-muted-foreground">{rightPanelInsight.description}</p>
+
+                      <div className="rounded-xl border border-border/70 bg-card/60 p-4">
+                        <div className="grid items-start gap-4 md:grid-cols-[3fr_2fr]">
+                          <div>
+                            <p className="mb-3 text-xs uppercase tracking-wide text-muted-foreground">
+                              Your provider count
+                            </p>
+                            <div className="flex items-center justify-center">
+                              <CircleGraph
+                                value={rightPanelInsight.selected}
+                                size={180}
+                                mode="dynamic"
+                                valueSuffix=""
+                              />
+                            </div>
+                            <p className="mt-2 text-center text-xs text-muted-foreground">
+                              * Industry avg {rightPanelInsight.average}
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            {rightPanelInsight.derived.map((metric) => (
+                              <div key={metric.label} className="rounded-lg border border-border/60 bg-background/60 p-2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-[11px] text-muted-foreground">{metric.label}</p>
+                                  <div className="shrink-0">
+                                    <CircleGraph
+                                      value={metric.value}
+                                      size={64}
+                                      strokeWidth={6}
+                                      variant="compact"
+                                      valueFontSize={13}
+                                      mode="dynamic"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-border/70 bg-card/55 p-4 text-sm text-muted-foreground">
+                      Enter your first provider-count response in chat to reveal the analysis panel.
+                    </div>
+                  )}
                 </>
               )}
             </div>
