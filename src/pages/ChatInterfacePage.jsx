@@ -94,7 +94,7 @@ function EquinixFortressBackdrop({ mouse, mouseClient }) {
   )
 }
 
-const REGION_OPTIONS = ['US East', 'US West', 'Europe', 'APAC', 'Latin America', 'Middle East & Africa']
+const REGION_OPTIONS = ['US East', 'US West', 'Continental Europe', 'APAC', 'Latin America', 'Middle East & Africa']
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n))
 
 const QUESTIONNAIRE = [
@@ -224,7 +224,7 @@ function toResponseSummary(question, value) {
   if (question.type === 'single' || question.type === 'autocomplete') return value || 'No response'
   if (question.type === 'multi') return value.length ? value.join(', ') : 'No selection'
   if (question.type === 'locationSet') {
-    return [value.primary, value.high.length ? `High: ${value.high.join(', ')}` : null, `Emerging: ${value.emerging}`]
+    return [value.primary ? `Primary: ${value.primary}` : null, value.high.length ? `High: ${value.high.join(', ')}` : null, value.emerging ? `Emerging: ${value.emerging}` : null]
       .filter(Boolean)
       .join(' | ')
   }
@@ -366,15 +366,42 @@ function getInsight(questionId, answer) {
   }
 
   if (questionId === 'locations') {
+    const selectedPrimary = answer?.primary ?? ''
+    const selectedHigh = Array.isArray(answer?.high) ? answer.high : []
+    const selectedEmerging = answer?.emerging ?? ''
+    const selectedCount = [selectedPrimary, ...selectedHigh, selectedEmerging].filter(Boolean).length
+    const uniqueRegions = [...new Set([selectedPrimary, ...selectedHigh, selectedEmerging].filter(Boolean))]
+
+    const regionToPoint = {
+      'US East': { x: 28, y: 41 },
+      'US West': { x: 20, y: 40 },
+      'Continental Europe': { x: 50, y: 35 },
+      APAC: { x: 76, y: 47 },
+      'Latin America': { x: 31, y: 62 },
+      'Middle East & Africa': { x: 56, y: 56 },
+    }
+
+    const markers = uniqueRegions.map((region) => ({
+      label: region,
+      ...regionToPoint[region],
+    }))
+
     return {
-      title: 'Local Infrastructure Considerations',
+      visual: 'global-footprint',
+      title: 'Global User Footprint',
       description:
-        'Regional variations in multicloud priorities reflect local business environments and regulatory requirements that must be navigated:',
-      bullets: [
-        'Europe: GDPR compliance drives 56% to prioritize security',
-        'India: Rapid adoption with 72% focusing on analytics',
-        'Latin America: Infrastructure limitations create unique challenges',
-        'North America: AI innovation leads with 51% improving AI support',
+        'View your current footprint on a global lens and prioritize interconnection strategy by concentration tier.',
+      summary: `${selectedCount} region${selectedCount === 1 ? '' : 's'} configured`,
+      markers,
+      highlights: [
+        selectedPrimary ? `Primary concentration: ${selectedPrimary}` : 'Select a primary concentration region',
+        selectedHigh.length ? `High concentrations: ${selectedHigh.join(', ')}` : 'Add one or more high-concentration regions',
+        selectedEmerging ? `Emerging concentration: ${selectedEmerging}` : 'Select an emerging concentration region',
+      ],
+      metrics: [
+        { label: 'Coverage confidence', value: Math.min(95, 28 + selectedCount * 14) },
+        { label: 'Latency risk spread', value: Math.max(18, 72 - selectedCount * 8) },
+        { label: 'Interconnection priority', value: Math.min(92, 24 + uniqueRegions.length * 15) },
       ],
     }
   }
@@ -646,6 +673,9 @@ export function ChatInterfacePage() {
             <Link to="/theme" className="transition hover:text-foreground">
               Theme
             </Link>
+            <Link to="/map-preloader" className="transition hover:text-foreground">
+              Map loader
+            </Link>
           </nav>
         </header>
 
@@ -842,7 +872,7 @@ export function ChatInterfacePage() {
                     {activeQuestion.type === 'locationSet' ? (
                       <div className="space-y-3">
                         <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">Highest concentration *</p>
+                          <p className="text-xs font-medium text-muted-foreground">Where is your highest concentration of users? *</p>
                           <select
                             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                             value={currentDraft.primary}
@@ -859,27 +889,55 @@ export function ChatInterfacePage() {
                           </select>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">High concentrations (optional)</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            {REGION_OPTIONS.map((region) => (
-                              <label key={region} className="flex items-center gap-2 rounded-md border border-border px-2 py-1 text-xs">
-                                <input
-                                  type="checkbox"
-                                  checked={currentDraft.high.includes(region)}
-                                  onChange={() => {
-                                    const high = currentDraft.high.includes(region)
-                                      ? currentDraft.high.filter((r) => r !== region)
-                                      : [...currentDraft.high, region]
-                                    updateDraft(activeQuestion.id, { ...currentDraft, high })
-                                  }}
-                                />
-                                {region}
-                              </label>
-                            ))}
+                          <p className="text-xs font-medium text-muted-foreground">Where do you have high concentrations of users?</p>
+                          <div className="space-y-2 rounded-md border border-border bg-background px-3 py-2">
+                            <div className="flex flex-wrap gap-1.5">
+                              {currentDraft.high.length ? (
+                                currentDraft.high.map((region) => (
+                                  <button
+                                    key={region}
+                                    type="button"
+                                    onClick={() =>
+                                      updateDraft(activeQuestion.id, {
+                                        ...currentDraft,
+                                        high: currentDraft.high.filter((r) => r !== region),
+                                      })
+                                    }
+                                    className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1 text-[11px] text-foreground"
+                                  >
+                                    {region}
+                                    <span className="text-muted-foreground">x</span>
+                                  </button>
+                                ))
+                              ) : (
+                                <span className="text-xs text-muted-foreground">No high concentration regions selected.</span>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+                              <select
+                                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                                value=""
+                                onChange={(e) => {
+                                  const selected = e.target.value
+                                  if (!selected) return
+                                  if (currentDraft.high.includes(selected)) return
+                                  updateDraft(activeQuestion.id, { ...currentDraft, high: [...currentDraft.high, selected] })
+                                }}
+                              >
+                                <option value="">Add high-concentration region</option>
+                                {REGION_OPTIONS.filter((region) => !currentDraft.high.includes(region)).map((region) => (
+                                  <option key={region} value={region}>
+                                    {region}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">Emerging concentration *</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Where do you have emerging concentrations of users? *
+                          </p>
                           <select
                             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                             value={currentDraft.emerging}
@@ -1110,9 +1168,52 @@ export function ChatInterfacePage() {
                         </div>
                       ) : null}
 
+                      {rightPanelInsight.visual === 'global-footprint' ? (
+                        <div className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">Global footprint view</p>
+                            <p className="text-xs text-muted-foreground">{rightPanelInsight.summary}</p>
+                          </div>
+
+                          <div className="rounded-lg border border-border/70 bg-background/75 p-3">
+                            <div className="relative mx-auto h-44 w-44 overflow-hidden rounded-full border border-border/70 bg-[#0a1224]">
+                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,rgba(56,189,248,0.2),transparent_55%),radial-gradient(circle_at_70%_70%,rgba(99,102,241,0.18),transparent_50%)]" />
+                              <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
+                                <defs>
+                                  <linearGradient id="globe-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#38bdf8" />
+                                    <stop offset="100%" stopColor="#a855f7" />
+                                  </linearGradient>
+                                </defs>
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="url(#globe-ring)" strokeOpacity="0.6" />
+                                <ellipse cx="50" cy="50" rx="35" ry="45" fill="none" stroke="rgba(148,163,184,0.35)" />
+                                <ellipse cx="50" cy="50" rx="18" ry="45" fill="none" stroke="rgba(148,163,184,0.25)" />
+                                <ellipse cx="50" cy="50" rx="45" ry="24" fill="none" stroke="rgba(148,163,184,0.25)" />
+                                <ellipse cx="50" cy="50" rx="45" ry="10" fill="none" stroke="rgba(148,163,184,0.22)" />
+                                {rightPanelInsight.markers.map((marker) => (
+                                  <g key={marker.label}>
+                                    <circle cx={marker.x} cy={marker.y} r="2.2" fill="#f97316" />
+                                    <circle cx={marker.x} cy={marker.y} r="4.4" fill="#f97316" fillOpacity="0.22" />
+                                  </g>
+                                ))}
+                              </svg>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            {rightPanelInsight.highlights.map((item) => (
+                              <p key={item} className="text-xs text-muted-foreground">
+                                {item}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
                       {rightPanelInsight.metrics?.length &&
                       rightPanelInsight.visual !== 'provider-gauge' &&
-                      rightPanelInsight.visual !== 'cloud-environments' ? (
+                      rightPanelInsight.visual !== 'cloud-environments' &&
+                      rightPanelInsight.visual !== 'global-footprint' ? (
                         <div className="space-y-2">
                           {rightPanelInsight.metrics.map((metric) => (
                             <div key={metric.label} className="space-y-1">
@@ -1132,12 +1233,20 @@ export function ChatInterfacePage() {
                           ))}
                         </div>
                       ) : null}
-                      {rightPanelInsight.bullets?.length ? (
-                        <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
-                          {rightPanelInsight.bullets.map((item) => (
-                            <li key={item}>{item}</li>
+                      {rightPanelInsight.metrics?.length && rightPanelInsight.visual === 'global-footprint' ? (
+                        <div className="space-y-2">
+                          {rightPanelInsight.metrics.map((metric) => (
+                            <div key={metric.label} className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-muted-foreground">{metric.label}</span>
+                                <span>{metric.value}%</span>
+                              </div>
+                              <div className="h-1.5 rounded-full bg-muted">
+                                <div className="h-full rounded-full bg-gradient-to-r from-sky-400 via-violet-400 to-orange-400" style={{ width: `${metric.value}%` }} />
+                              </div>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       ) : null}
                     </div>
                   ) : (

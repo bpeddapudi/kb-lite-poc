@@ -36,10 +36,14 @@ export function LandingPage() {
           <Button asChild size="lg" variant="outline" className="rounded-lg">
             <Link to="/theme">Theme lab</Link>
           </Button>
+          <Button asChild size="lg" variant="outline" className="rounded-lg">
+            <Link to="/map-preloader">Map preloader POC</Link>
+          </Button>
         </div>
         <p className="mt-4 text-sm text-muted-foreground">
           <code className="rounded bg-muted px-2 py-1 font-mono text-xs">/lite</code> — gallery &amp; globe ·{' '}
           <code className="rounded bg-muted px-2 py-1 font-mono text-xs">/chat-interface</code> — chat POC ·{' '}
+          <code className="rounded bg-muted px-2 py-1 font-mono text-xs">/map-preloader</code> — map loader POC ·{' '}
           <code className="rounded bg-muted px-2 py-1 font-mono text-xs">/theme</code> — tokens &amp; previews
         </p>
         <p className="mt-12 text-xs text-muted-foreground">
