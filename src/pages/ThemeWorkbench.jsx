@@ -20,8 +20,8 @@ const MapboxPreview = lazy(() =>
 const ThreePreview = lazy(() =>
   import('../components/visuals/ThreePreview.jsx').then((m) => ({ default: m.ThreePreview })),
 )
-const LottiePreview = lazy(() =>
-  import('../components/visuals/LottiePreview.jsx').then((m) => ({ default: m.LottiePreview })),
+const WorldMapSvgPreview = lazy(() =>
+  import('../components/visuals/WorldMapSvgPreview.jsx').then((m) => ({ default: m.WorldMapSvgPreview })),
 )
 
 function VisualFallback() {
@@ -32,7 +32,7 @@ function VisualFallback() {
   )
 }
 
-/** Theme tokens, Mapbox, Three, Lottie preview (moved from /lite). */
+/** Theme tokens, Mapbox, Three, SVG world map preview (moved from /lite). */
 export function ThemeWorkbench() {
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -68,7 +68,7 @@ export function ThemeWorkbench() {
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Theme lab</p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Component &amp; media preview</h1>
           <p className="max-w-2xl text-pretty text-muted-foreground">
-            Reusable buttons and cards, plus Mapbox, Three.js, and Lottie. Use the theme control in
+            Reusable buttons and cards, plus Mapbox, Three.js, and SVG world maps. Use the theme control in
             the header to switch themes (including{' '}
             <strong className="font-medium text-foreground">Blueprint</strong>).
           </p>
@@ -149,7 +149,7 @@ export function ThemeWorkbench() {
                 <ThreePreview />
               </div>
               <div className="mt-6">
-                <LottiePreview />
+                <WorldMapSvgPreview />
               </div>
             </Suspense>
           </ErrorBoundary>
