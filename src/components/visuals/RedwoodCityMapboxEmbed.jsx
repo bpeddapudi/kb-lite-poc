@@ -20,8 +20,8 @@ const MAP_STYLES = {
 export function RedwoodCityMapboxEmbed({ className = '', appearance = 'dark' }) {
   const containerRef = useRef(null)
   const [error, setError] = useState(null)
-  const token = getMapboxPublicToken()
   const rawEnv = import.meta.env.VITE_MAPBOX_TOKEN?.trim()
+  const token = getMapboxPublicToken()
   const styleUrl = MAP_STYLES[appearance] ?? MAP_STYLES.dark
 
   useEffect(() => {
