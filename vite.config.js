@@ -4,6 +4,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: process.env.GITHUB_ACTIONS ? '/kb-lite-poc/' : '/',
+  base: process.env.GITHUB_ACTIONS === 'true' ? '/kb-lite-poc/' : '/',
   plugins: [react(), tailwindcss()],
 })
