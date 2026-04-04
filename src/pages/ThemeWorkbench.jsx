@@ -77,8 +77,8 @@ export function ThemeWorkbench() {
         <section className="space-y-3">
           <h2 className="text-lg font-medium">Mapbox (simple map)</h2>
           <p className="text-sm text-muted-foreground">
-            2D map with zoom controls — confirms your{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">VITE_MAPBOX_TOKEN</code> is loaded.
+            2D map with zoom controls — requires <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">VITE_MAPBOX_TOKEN</code> in{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">.env</code> (public <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">pk.</code> token).
           </p>
           <Card className="overflow-hidden">
             <CardHeader className="pb-2">

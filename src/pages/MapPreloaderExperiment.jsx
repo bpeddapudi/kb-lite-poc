@@ -11,7 +11,7 @@ import { RedwoodCityMapboxEmbed } from '../components/visuals/RedwoodCityMapboxE
  * CSS Continuous #3 from https://css-loaders.com/continuous/
  */
 
-const DEFAULT_LOAD_MS = 5000
+const DEFAULT_LOAD_MS = 2800
 
 /** Single line — map-focused, not generic “Loading”. */
 const MAP_STATUS_LINE = "Hang tight — we're framing your map"
@@ -332,8 +332,8 @@ export function MapPreloaderExperiment() {
                 restartLoading()
               }}
             >
-              <option value={5000}>5s</option>
               <option value={2800}>2.8s</option>
+              <option value={5000}>5s</option>
               <option value={1200}>1.2s</option>
             </select>
             <span className="text-xs text-white/40">

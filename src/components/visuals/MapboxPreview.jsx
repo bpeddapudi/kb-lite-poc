@@ -86,10 +86,8 @@ export function MapboxPreview() {
         {!token ? (
           <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 border-t border-border bg-muted/30 p-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Set a valid public token{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">VITE_MAPBOX_TOKEN=pk.…</code> in{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5">.env</code> (must start with{' '}
-              <code className="rounded bg-muted px-1.5 py-0.5">pk.</code>) and restart the dev server.
+              Set <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">VITE_MAPBOX_TOKEN</code> (public{' '}
+              <code className="rounded bg-muted px-1.5 py-0.5">pk.</code> token) in <code className="rounded bg-muted px-1.5 py-0.5">.env</code> and restart the dev server.
             </p>
           </div>
         ) : (

@@ -6,13 +6,13 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import { getMapboxPublicToken, mapboxTokenHint } from '../../lib/mapbox-token.js'
 
 /**
- * Minimal 2D map (mercator + zoom controls) to verify VITE_MAPBOX_TOKEN.
+ * Minimal 2D map (mercator + zoom controls); token from VITE_MAPBOX_TOKEN.
  */
 export function SimpleMapboxMap() {
   const containerRef = useRef(null)
   const [error, setError] = useState(null)
-  const token = getMapboxPublicToken()
   const rawEnv = import.meta.env.VITE_MAPBOX_TOKEN?.trim()
+  const token = getMapboxPublicToken()
 
   useEffect(() => {
     if (!token || !containerRef.current) return
@@ -57,7 +57,7 @@ export function SimpleMapboxMap() {
     return (
       <div className="flex min-h-[280px] items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
         Set <code className="mx-1 rounded bg-muted px-1.5 py-0.5 text-foreground">VITE_MAPBOX_TOKEN</code> in{' '}
-        <code className="mx-1 rounded bg-muted px-1.5 py-0.5">.env</code> and restart the dev server.
+        <code className="mx-1 rounded bg-muted px-1.5 py-0.5">.env</code> (public <code className="rounded bg-muted px-1.5 py-0.5">pk.</code> token) and restart the dev server.
       </div>
     )
   }
