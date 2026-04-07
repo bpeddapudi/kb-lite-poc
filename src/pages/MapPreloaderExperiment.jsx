@@ -8,8 +8,10 @@ import { RedwoodCityMapboxEmbed } from '../components/visuals/RedwoodCityMapboxE
 /**
  * POC: Map embed preloaders — multiple directions in one view.
  * Equinix Blueprint color inspiration: https://tailwind-blueprint.vercel.app/foundations/colors/
- * CSS Continuous #3 from https://css-loaders.com/continuous/
  */
+
+/** Resolves under GitHub Pages base path (`/kb-lite-poc/`) and locally (`/`). */
+const EQUINIX_EMBLEM_PNG = `${import.meta.env.BASE_URL}Equinix-Emblem.png`
 
 const DEFAULT_LOAD_MS = 2800
 
@@ -22,8 +24,6 @@ function MapPreloaderGraphic({ variant, theme }) {
       return <div className="mp-loader-c3-v1" />
     case 'v2':
       return <EquinixEmblemPathLoader theme={theme} />
-    case 'css-c3':
-      return <div className="mp-loader-c3" />
     default:
       return <div className="mp-loader-c3-v1" />
   }
@@ -258,9 +258,7 @@ export function MapPreloaderExperiment() {
   }
 
   const showEquinixEmblem = variant === 'v1'
-  const isCssVariant = variant === 'css-c3'
-  const stackGap =
-    variant === 'v1' ? 'gap-4' : variant === 'v2' ? 'gap-6' : 'gap-8'
+  const stackGap = variant === 'v1' ? 'gap-4' : 'gap-6'
   /* Subtle caption: small + muted so loaders stay the focus */
   const statusTextClass =
     mapTheme === 'light'
@@ -345,7 +343,7 @@ export function MapPreloaderExperiment() {
             <div className={`flex w-full max-w-md flex-col items-center ${stackGap}`}>
               {showEquinixEmblem ? (
                 <img
-                  src="/Equinix-Emblem.png"
+                  src={EQUINIX_EMBLEM_PNG}
                   alt=""
                   className={`h-10 w-auto sm:h-12 ${
                     mapTheme === 'light'
@@ -355,11 +353,7 @@ export function MapPreloaderExperiment() {
                 />
               ) : null}
               <p className={statusTextClass}>{MAP_STATUS_LINE}</p>
-              <div
-                className={`flex w-full flex-col items-center justify-center ${
-                  isCssVariant ? 'min-h-[5.5rem] sm:min-h-[6rem]' : ''
-                }`}
-              >
+              <div className="flex w-full flex-col items-center justify-center">
                 <MapPreloaderGraphic variant={variant} theme={mapTheme} />
               </div>
             </div>
@@ -368,15 +362,15 @@ export function MapPreloaderExperiment() {
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-white/40">Preloader previews</p>
             <p className="mb-3 text-xs text-white/45">Click a card to run that preloader on the map above.</p>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <LoaderPreviewCard
                 selected={variant === 'v1'}
                 onClick={() => selectVariant('v1')}
-                title="Version 1 — Continuous #3 bar"
+                title="Version 1 — gradient bar"
                 description="Skewed bar, sliding gradient (wide / short variant)."
               >
                 <div data-preloader-theme={mapTheme} className="flex scale-[0.85] flex-col items-center gap-3">
-                  <img src="/Equinix-Emblem.png" alt="" className="h-6 w-auto opacity-90" />
+                  <img src={EQUINIX_EMBLEM_PNG} alt="" className="h-6 w-auto opacity-90" />
                   <div className="mp-loader-c3-v1" />
                 </div>
               </LoaderPreviewCard>
@@ -390,37 +384,13 @@ export function MapPreloaderExperiment() {
                   <EquinixEmblemPathLoader theme={mapTheme} />
                 </div>
               </LoaderPreviewCard>
-              <LoaderPreviewCard
-                selected={variant === 'css-c3'}
-                onClick={() => selectVariant('css-c3')}
-                title="CSS — Continuous #3"
-                description="css-loaders.com — skewed bar, sliding gradient on dark track."
-              >
-                <div data-preloader-theme={mapTheme} className="flex scale-90 items-center justify-center py-2">
-                  <div className="mp-loader-c3" />
-                </div>
-              </LoaderPreviewCard>
             </div>
           </div>
         </section>
       </main>
 
       <style>{`
-        /* Continuous #3 — Equinix gradient chip on dark track */
-        .mp-loader-c3 {
-          width: 120px;
-          height: 20px;
-          transform: skewX(-45deg);
-          background:
-            linear-gradient(90deg, #e31b23 0%, #f97316 45%, #a855f7 100%) left -30px top 0 / 30px 20px no-repeat
-            oklch(0.32 0.02 264);
-          animation: mp-l3 1s infinite linear;
-        }
-        @keyframes mp-l3 {
-          100% { background-position: right -30px top 0; }
-        }
-
-        /* Version 1: ~50% wider bar; height 25% less than prior 14px → 10.5px */
+        /* Version 1: gradient bar on dark track */
         .mp-loader-c3-v1 {
           width: 180px;
           height: 10.5px;
@@ -434,11 +404,6 @@ export function MapPreloaderExperiment() {
           100% { background-position: right -45px top 0; }
         }
 
-        [data-preloader-theme="light"] .mp-loader-c3 {
-          background:
-            linear-gradient(90deg, #e31b23 0%, #f97316 45%, #a855f7 100%) left -30px top 0 / 30px 20px no-repeat
-            oklch(0.90 0.02 264);
-        }
         [data-preloader-theme="light"] .mp-loader-c3-v1 {
           background:
             linear-gradient(90deg, #e31b23 0%, #f97316 45%, #a855f7 100%) left -45px top 0 / 45px 10.5px no-repeat
