@@ -1,0 +1,94 @@
+.page {
+    position: relative;
+    height: 100vh;
+  }
+  
+  .map {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: white;
+    opacity: 0;
+    transition: 0.8s;
+  }
+  
+  .map.show {
+    opacity: 1;
+  }
+  
+  .loader {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transition: 0.5s;
+  }
+  
+  .loader.hide {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .world {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    height: 500px;
+  }
+  
+  .center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    transform: translate(-50%, -50%);
+    background: #8ee7ff;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #8ee7ff;
+  }
+  
+  .point {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: white;
+    animation: blink 2s infinite;
+  }
+  
+  .point .label {
+    position: absolute;
+    top: -18px;
+    font-size: 10px;
+    color: #ccc;
+  }
+  
+  .point.amer { background: #6dd6ff; }
+  .point.emea { background: #8ce3ff; }
+  .point.apac { background: #b3efff; }
+  
+  .route {
+    position: absolute;
+    height: 1px;
+    background: rgba(120,220,255,0.3);
+  }
+  
+  .pulse {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #8ee7ff, transparent);
+    animation: move 2s infinite linear;
+  }
+  
+  @keyframes move {
+    from { transform: translateX(-40px); }
+    to { transform: translateX(600px); }
+  }
+  
+  @keyframes blink {
+    0%,100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
