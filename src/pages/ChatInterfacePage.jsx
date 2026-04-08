@@ -676,6 +676,9 @@ export function ChatInterfacePage() {
             <Link to="/map-preloader" className="transition hover:text-foreground">
               Map loader
             </Link>
+            <Link to="/mapbox-preloader" className="transition hover:text-foreground">
+              Mapbox loader
+            </Link>
           </nav>
         </header>
 
